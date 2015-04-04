@@ -54,10 +54,38 @@ describe GfobhScorer::Scorer do
 
   let(:track) { 'problem_set_1' }
 
-  def make_url(seed = nil)
-    [GfobhScorer::Scorer::URL, track, seed]
+  def make_url(seed = nil, base = GfobhScorer::Scorer::BASE_URL)
+    [base, track, seed]
       .compact
       .join('/')
+  end
+
+  describe 'When configuring a custom url and example path' do
+    subject(:scorer) do
+      described_class.new(
+        track,
+        stdout: stdout,
+        stderr: stderr,
+        config: {
+          base_url: 'http://foo.bar/baz',
+          example_1: '/path/to/example'
+        }
+      )
+    end
+
+    it 'hits the correct urls and scripts' do
+      expect(RestClient).to receive(:get)
+        .with(make_url(nil, 'http://foo.bar/baz'))
+        .and_yield(response1)
+      expect(subject).to receive(:`)
+        .with('/path/to/example seed-for-problem-1')
+        .and_return('answer-for-problem-1')
+      expect(RestClient).to receive(:get)
+        .with(make_url('answer-for-problem-1', 'http://foo.bar/baz'))
+        .and_yield(final_response)
+
+      expect(subject.run).to eql true
+    end
   end
 
   describe 'When fetching the initial example' do
@@ -119,8 +147,7 @@ describe GfobhScorer::Scorer do
           end
 
           it 'returns true' do
-            subject.run
-            # expect(subject.run).to eql true
+            expect(subject.run).to eql true
           end
         end
       end

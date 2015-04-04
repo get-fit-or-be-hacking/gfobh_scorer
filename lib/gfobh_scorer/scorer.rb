@@ -3,7 +3,7 @@ require 'restclient'
 
 module GfobhScorer
   class Scorer
-    URL = 'https://gfobh.herokuapp.com'
+    BASE_URL = 'https://gfobh.herokuapp.com'
 
     def initialize(track_name, opts = {})
       @track_name = track_name
@@ -32,6 +32,10 @@ module GfobhScorer
 
     attr_reader :config, :current_example, :stdout, :stderr, :track_name
 
+    def base_url
+      config[:base_url] || BASE_URL
+    end
+
     #
     # Run the current example script, benchmarking the
     # amount of time it takes
@@ -51,7 +55,7 @@ module GfobhScorer
     #
     # @return [type] [description]
     def current_example_script
-      config["example_#{current_example}"] ||
+      config["example_#{current_example}".to_sym] ||
         "./bin/example_#{current_example}"
     end
 
@@ -153,8 +157,8 @@ module GfobhScorer
     # is the last example, false if incorrect, String value if there
     # are more examples to run
     def verify_current_answer(answer = nil)
-      url = [URL, track_name, answer].compact.join('/')
-      RestClient.get(url) do |response|
+      full_url = [base_url, track_name, answer].compact.join('/')
+      RestClient.get(full_url) do |response|
         case response.code
         # success
         when 200
