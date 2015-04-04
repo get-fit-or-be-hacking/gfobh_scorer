@@ -1,0 +1,1 @@
+require 'gfobh_scorer'

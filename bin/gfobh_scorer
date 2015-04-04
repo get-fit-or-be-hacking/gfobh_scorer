@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'gfobh_scorer'
+require 'yaml'
+
+config = begin
+  YAML.parse(".config.yml")
+rescue
+  {}
+end
+
+scorer = GfobhScorer::Scorer.new(ARGV[1], config: config)
+
+if scorer.run
+  Kernel.exit(0)
+else
+  Kernel.exit(1)
+end
