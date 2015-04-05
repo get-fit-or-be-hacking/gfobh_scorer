@@ -45,6 +45,7 @@ module GfobhScorer
     # @return [String] Result of the script
     def benchmark_current_example(seed)
       start = Time.now
+      log("running #{current_example_script} #{seed}")
       ret = `#{current_example_script} #{seed}`
       timings[current_example] = (Time.now - start).to_f
       ret.to_s.strip
@@ -66,6 +67,15 @@ module GfobhScorer
     # @return [String]
     def fetch_initial_seed
       verify_current_answer
+    end
+
+    #
+    # Log a message
+    # @param msg [String] The message
+    #
+    # @return [String] The message
+    def log(msg)
+      stdout.puts(msg) if config[:debug]
     end
 
     #
@@ -158,6 +168,7 @@ module GfobhScorer
     # are more examples to run
     def verify_current_answer(answer = nil)
       full_url = [base_url, track_name, answer].compact.join('/')
+      log("Verifying #{full_url}")
       RestClient.get(full_url) do |response|
         case response.code
         # success
