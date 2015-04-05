@@ -4,12 +4,20 @@ require 'gfobh_scorer'
 require 'yaml'
 
 config = begin
-  YAML.parse(".config.yml")
+  YAML.load_file(".config.yml")
 rescue
   {}
 end
 
-scorer = GfobhScorer::Scorer.new(ARGV[1], config: config)
+# symoblize_keys
+symbolized = {}
+config.each_pair do |k,v|
+  symbolized[k.to_sym] ||= v
+end
+
+config.merge!(symbolized)
+
+scorer = GfobhScorer::Scorer.new(ARGV[0], config: config)
 
 if scorer.run
   Kernel.exit(0)
