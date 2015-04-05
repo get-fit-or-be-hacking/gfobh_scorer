@@ -19,7 +19,7 @@ module GfobhScorer
 
       # loop through til we get a wrong answer (curr is false) or
       # we have reached the end (curr is true)
-      while (curr = run_current_example(curr)) && curr.is_a?(String)
+      while (curr = run_current_example(curr)) && is_seed_value(curr)
         report_success
         @current_example += 1
       end
@@ -46,7 +46,12 @@ module GfobhScorer
     def benchmark_current_example(seed)
       start = Time.now
       log("running #{current_example_script} #{seed}")
-      ret = `#{current_example_script} #{seed}`
+      ret = begin
+        `#{current_example_script} #{seed}`
+      rescue Errno::ENOENT
+        log("#{current_example_script} does not exist")
+        "" # blank output is considered a failure
+      end
       timings[current_example] = (Time.now - start).to_f
       ret.to_s.strip
     end
@@ -71,6 +76,10 @@ module GfobhScorer
 
     def headers
       { 'Accept' => 'application/json' }
+    end
+
+    def is_seed_value(curr)
+      ![true, false, nil].include?(curr)
     end
 
     #
@@ -148,6 +157,7 @@ module GfobhScorer
     # is the last example, false if incorrect, String value if there
     # are more examples to run
     def run_current_example(seed)
+      log("Running example #{current_example} with #{seed}")
       answer = benchmark_current_example(seed)
       return false if answer.empty?
       verify_current_answer(answer)
@@ -177,12 +187,17 @@ module GfobhScorer
         case response.code
         # success
         when 200
+          log(
+            "Retrieved new seed value #{JSON.parse(response.body)['seed']}"
+          )
           JSON.parse(response.body)['seed']
         # success and it's the last example
         when 204
+          log("End of problem set")
           true
         # failure
         when 404
+          log("Incorrect answer")
           false
         else
           stderr.puts(
