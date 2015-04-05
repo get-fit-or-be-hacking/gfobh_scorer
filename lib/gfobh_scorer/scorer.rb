@@ -69,6 +69,10 @@ module GfobhScorer
       verify_current_answer
     end
 
+    def headers
+      { 'Accept' => 'application/json' }
+    end
+
     #
     # Log a message
     # @param msg [String] The message
@@ -169,7 +173,7 @@ module GfobhScorer
     def verify_current_answer(answer = nil)
       full_url = [base_url, track_name, answer].compact.join('/')
       log("Verifying #{full_url}")
-      RestClient.get(full_url) do |response|
+      RestClient.get(full_url, headers) do |response|
         case response.code
         # success
         when 200

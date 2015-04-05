@@ -41,6 +41,10 @@ describe GfobhScorer::Scorer do
     )
   end
 
+  let(:headers) do
+    { 'Accept' => 'application/json' }
+  end
+
   let(:not_found_response) do
     double(
       :not_found_response,
@@ -75,13 +79,15 @@ describe GfobhScorer::Scorer do
 
     it 'hits the correct urls and scripts' do
       expect(RestClient).to receive(:get)
-        .with(make_url(nil, 'http://foo.bar/baz'))
+        .with(make_url(nil, 'http://foo.bar/baz'), headers)
         .and_yield(response1)
       expect(subject).to receive(:`)
         .with('/path/to/example seed-for-problem-1')
         .and_return('answer-for-problem-1')
       expect(RestClient).to receive(:get)
-        .with(make_url('answer-for-problem-1', 'http://foo.bar/baz'))
+        .with(
+          make_url('answer-for-problem-1', 'http://foo.bar/baz'), headers
+        )
         .and_yield(final_response)
 
       expect(subject.run).to eql true
@@ -95,7 +101,7 @@ describe GfobhScorer::Scorer do
       allow(subject).to receive(:`)
         .and_return("")
       expect(RestClient).to receive(:get)
-        .with(make_url)
+        .with(make_url, headers)
         .and_yield(response1)
       allow(stdout).to receive(:puts)
       allow(stderr).to receive(:puts)
@@ -112,7 +118,7 @@ describe GfobhScorer::Scorer do
     describe 'with a correct first answer' do
       before do
         expect(RestClient).to receive(:get)
-          .with(make_url('answer-for-problem-1'))
+          .with(make_url('answer-for-problem-1'), headers)
           .and_yield(response2)
       end
 
@@ -142,7 +148,7 @@ describe GfobhScorer::Scorer do
         describe 'when the second example is the last one' do
           before do
             expect(RestClient).to receive(:get)
-              .with(make_url('answer-for-problem-2'))
+              .with(make_url('answer-for-problem-2'), headers)
               .and_yield(final_response)
           end
 
@@ -156,7 +162,7 @@ describe GfobhScorer::Scorer do
     describe 'with an incorrect first answer' do
       before do
         expect(RestClient).to receive(:get)
-          .with(make_url('answer-for-problem-1'))
+          .with(make_url('answer-for-problem-1'), headers)
           .and_yield(not_found_response)
       end
 
