@@ -82,7 +82,7 @@ describe GfobhScorer::Scorer do
         .with(make_url(nil, 'http://foo.bar/baz'), headers)
         .and_yield(response1)
       expect(subject).to receive(:`)
-        .with('/path/to/example seed-for-problem-1')
+        .with('/path/to/example \'seed-for-problem-1\'')
         .and_return('answer-for-problem-1')
       expect(RestClient).to receive(:get)
         .with(
@@ -107,7 +107,7 @@ describe GfobhScorer::Scorer do
       allow(stderr).to receive(:puts)
 
       allow(subject).to receive(:`)
-        .with('./bin/example_1 seed-for-problem-1')
+        .with('./bin/example_1 \'seed-for-problem-1\'')
         .and_return('answer-for-problem-1')
     end
 
@@ -141,7 +141,7 @@ describe GfobhScorer::Scorer do
       describe 'with a correct second answer' do
         before do
           allow(subject).to receive(:`)
-            .with('./bin/example_2 seed-for-problem-2')
+            .with('./bin/example_2 \'seed-for-problem-2\'')
             .and_return('answer-for-problem-2')
         end
 

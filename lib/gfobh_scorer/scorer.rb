@@ -47,7 +47,11 @@ module GfobhScorer
       start = Time.now
       log("running #{current_example_script} #{seed}")
       ret = begin
-        `#{current_example_script} #{seed}`
+        val = case seed
+              when Hash, Array then JSON.unparse(seed)
+              else seed.to_s
+              end
+        `#{current_example_script} '#{val.gsub("'","\'")}'`
       rescue Errno::ENOENT
         log("#{current_example_script} does not exist")
         "" # blank output is considered a failure
