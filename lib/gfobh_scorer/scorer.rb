@@ -45,12 +45,12 @@ module GfobhScorer
     # @return [String] Result of the script
     def benchmark_current_example(seed)
       start = Time.now
-      log("running #{current_example_script} #{seed}")
       ret = begin
         val = case seed
               when Hash, Array then JSON.unparse(seed)
               else seed.to_s
               end
+        log("\nrunning #{current_example_script} #{val[0..100]}")
         `#{current_example_script} '#{val.gsub("'","\'")}'`
       rescue Errno::ENOENT
         log("#{current_example_script} does not exist")
@@ -103,7 +103,7 @@ module GfobhScorer
     # @return [nil]
     def report_results(success)
       if success
-
+        report_success
       else
         report_failure
       end
@@ -120,7 +120,7 @@ module GfobhScorer
     def report_total_time
       stdout.puts(
         sprintf(
-          "Total time for all examples: %.4f seconds",
+          "\nTotal time for all examples: %.4f seconds",
           timings.values.reduce(0, :+)
         )
       )
